@@ -140,25 +140,35 @@ class SignPdf {
     if (typeof certificate === 'undefined') {
       throw new _SignPdfError.default('Failed to find a certificate that matches the private key.', _SignPdfError.default.TYPE_INPUT);
     } // Add a sha256 signer. That's what Adobe.PPKLite adbe.pkcs7.detached expects.
+    // Note that the authenticatedAttributes order is relevant for correct
+    // EU signature validation:
+    // https://ec.europa.eu/digital-building-blocks/DSS/webapp-demo/validation
+
+    /*
+        Removendo atributo de data e outros relacionados ao content type que estavam
+        fazendo o validador da ICP Brasil não detectar nossa assinatura digital
+            authenticatedAttributes: [
+            {
+                type: forge.pki.oids.contentType,
+                value: forge.pki.oids.data,
+            }, {
+                type: forge.pki.oids.signingTime,
+                // value can also be auto-populated at signing time
+                // We may also support passing this as an option to sign().
+                // Would be useful to match the creation time of the document for example.
+                value: new Date(),
+            }, {
+                type: forge.pki.oids.messageDigest,
+                // value will be auto-populated at signing time
+            },
+        ],
+     */
 
 
     p7.addSigner({
       key: privateKey,
       certificate,
-      digestAlgorithm: _nodeForge.default.pki.oids.sha256,
-      authenticatedAttributes: [{
-        type: _nodeForge.default.pki.oids.contentType,
-        value: _nodeForge.default.pki.oids.data
-      }, {
-        type: _nodeForge.default.pki.oids.messageDigest // value will be auto-populated at signing time
-
-      }, {
-        type: _nodeForge.default.pki.oids.signingTime,
-        // value can also be auto-populated at signing time
-        // We may also support passing this as an option to sign().
-        // Would be useful to match the creation time of the document for example.
-        value: new Date()
-      }]
+      digestAlgorithm: _nodeForge.default.pki.oids.sha256
     }); // Sign in detached mode.
 
     p7.sign({

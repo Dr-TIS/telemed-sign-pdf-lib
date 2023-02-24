@@ -131,11 +131,11 @@ export class SignPdf {
         // Note that the authenticatedAttributes order is relevant for correct
         // EU signature validation:
         // https://ec.europa.eu/digital-building-blocks/DSS/webapp-demo/validation
-        p7.addSigner({
-            key: privateKey,
-            certificate,
-            digestAlgorithm: forge.pki.oids.sha256,
-            authenticatedAttributes: [
+
+        /*
+            Removendo atributo de data e outros relacionados ao content type que estavam
+            fazendo o validador da ICP Brasil não detectar nossa assinatura digital
+                authenticatedAttributes: [
                 {
                     type: forge.pki.oids.contentType,
                     value: forge.pki.oids.data,
@@ -150,6 +150,12 @@ export class SignPdf {
                     // value will be auto-populated at signing time
                 },
             ],
+
+        */
+        p7.addSigner({
+            key: privateKey,
+            certificate,
+            digestAlgorithm: forge.pki.oids.sha256,
         });
 
         // Sign in detached mode.
